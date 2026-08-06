@@ -4,19 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class ProfessorSubject extends Model
 {
     use HasFactory;
 
-    // Explicit table name
-    protected $table = 'professor_subjects';
-
     protected $fillable = [
         'user_id',
         'subject_id',
+        'grade_level_id',
         'school_year',
     ];
+
+    public function getTable()
+    {
+        if (Schema::hasTable('professor_subjects')) {
+            return 'professor_subjects';
+        }
+
+        return 'professor_subject';
+    }
 
     // Relation to Subject
     public function subject()
@@ -28,9 +36,9 @@ class ProfessorSubject extends Model
     {
         return $this->belongsTo(User::class, 'user_id');    
     }
-    public function gradeLevel()
+public function gradeLevel()
 {
-    return $this->belongsTo(GradeLevel::class);
+    return $this->belongsTo(GradeLevel::class, 'grade_level_id');
 }
 
 }

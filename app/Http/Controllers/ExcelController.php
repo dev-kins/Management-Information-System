@@ -27,7 +27,7 @@ class ExcelController extends Controller
             abort(404, 'No approved enrollments found.');
         }
 
-        $templatePath = storage_path('app/templates/template final.xlsx');
+        $templatePath = $this->resolveTemplatePath('template final.xlsx');
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -198,5 +198,21 @@ class ExcelController extends Controller
         $sheet->setCellValue($totalCol . $daysOfSchoolRow, $totalDays ?: '');
         $sheet->setCellValue($totalCol . $daysPresentRow, $totalPresent ?: '');
         $sheet->setCellValue($totalCol . $timesTardyRow, $totalTardy ?: '');
+    }
+
+    protected function resolveTemplatePath(string $fileName): string
+    {
+        $candidates = [
+            storage_path('app/templates/' . $fileName),
+            public_path('templates/' . $fileName),
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        abort(500, 'Excel export template not found. Please place it in public/templates or storage/app/templates.');
     }
 }

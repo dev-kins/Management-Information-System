@@ -415,7 +415,7 @@
       <div class="row g-4">
         <div class="col-md-4 col-12">
           <article class="card">
-            <img src="{{ asset('images/bg1.jpg') }}" class="card-img-top" alt="Students presenting projects at the annual science fair" />
+            <img src="{{ asset('images/lab.jpg') }}" class="card-img-top" alt="Students presenting projects at the annual science fair" />
             <div class="card-body">
               <h5 class="card-title">Annual Science Fair</h5>
               <p class="text-muted">Student projects across biology, chemistry, engineering, and research showcased in a campus-wide celebration of inquiry.</p>
@@ -425,7 +425,7 @@
         </div>
         <div class="col-md-4 col-12">
           <article class="card">
-            <img src="{{ asset('images/lo.jpg') }}" class="card-img-top" alt="Faculty workshop and teacher development session" />
+            <img src="{{ asset('images/present.jpg') }}" class="card-img-top" alt="Faculty workshop and teacher development session" />
             <div class="card-body">
               <h5 class="card-title">Teacher Training Workshop</h5>
               <p class="text-muted">Professional development for faculty in STEM teaching methods and lab safety.</p>
@@ -435,7 +435,7 @@
         </div>
         <div class="col-md-4 col-12">
           <article class="card">
-            <img src="{{ asset('images/banner.jpg') }}" class="card-img-top" alt="Library and student collaboration area" />
+            <img src="{{ asset('images/library.jpg') }}" class="card-img-top" alt="Library and student collaboration area" />
             <div class="card-body">
               <h5 class="card-title">Library & Research Hub</h5>
               <p class="text-muted">State-of-the-art library and collaborative research spaces now open to students.</p>

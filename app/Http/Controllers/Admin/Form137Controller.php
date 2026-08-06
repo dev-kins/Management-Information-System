@@ -15,28 +15,32 @@ use App\Http\Controllers\Controller;
 
 class Form137Controller extends Controller
 {
+    private const LEVEL_MAP = [
+        1 => '7',
+        2 => '8',
+        3 => '9',
+        4 => '10',
+    ];
+
     public function export($userId)
     {
         $user = User::findOrFail($userId);
 
         // Map grade_level_id → actual grade
-        $levelMap = [
-            1 => '7',
-            2 => '8',
-            3 => '9',
-            4 => '10',
-        ];
-
         // Load enrollments
         $enrollments = Enrollment::where('user_id', $user->id)
-            ->whereIn('grade_level_id', array_keys($levelMap))
+            ->whereIn('grade_level_id', array_keys(self::LEVEL_MAP))
             ->orderBy('grade_level_id', 'asc')
             ->with(['attendances'])
             ->get()
             ->mapWithKeys(fn($enr) => [$enr->grade_level_id => $enr]);
 
+        if ($enrollments->isEmpty()) {
+            return back()->with('error', 'No enrollment records were found for this student.');
+        }
+
         // Load Form 137 template
-        $templatePath = storage_path('app/templates/LSHS_Permanent Record Form-137.xlsx');
+        $templatePath = $this->resolveTemplatePath('LSHS_Permanent Record Form-137.xlsx');
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -98,22 +102,17 @@ class Form137Controller extends Controller
         //-----------------------------------
         // 🧮 Fill Grades & Attendance
         //-----------------------------------
-        // Map grade blocks to enrollment grade_level_id
-$levelMap = [
-    1 => '7', // grade_level_id 1 = Grade 7
-    2 => '8',
-    3 => '9',
-    4 => '10',
-];
-
 // Inside the loop for each enrollment:
 foreach ($enrollments as $gradeLevelId => $enrollment) {
-    $grade = $levelMap[$gradeLevelId] ?? null;
+    $grade = self::LEVEL_MAP[$gradeLevelId] ?? null;
     $map = $gradeBlocks[$grade] ?? null;
     if (!$map) continue;
 
     // Adviser (use grade_level_id)
-    $advisory = Advisory::where('grade_level_id', $gradeLevelId)->first();
+    $advisory = Advisory::where('grade_level_id', $gradeLevelId)
+        ->where('school_year', $enrollment->school_year)
+        ->with('professor')
+        ->first();
     $adviserName = $advisory ? ($advisory->professor->name ?? '') : '';
     $sheet->setCellValue($map['grade_level'], 'Grade ' . $grade);
     $sheet->setCellValue($map['adviser'], $adviserName);
@@ -147,7 +146,7 @@ $rowStart = 67;
 $rowEnd   = 76;
 
 foreach ($enrollments as $gradeLevelId => $enrollment) {
-    $grade = $levelMap[$gradeLevelId] ?? null;
+    $grade = self::LEVEL_MAP[$gradeLevelId] ?? null;
     if (!$grade || !isset($summaryBlocks[$grade])) continue;
 
     $block = $summaryBlocks[$grade];
@@ -317,5 +316,21 @@ foreach ($enrollments as $gradeLevelId => $enrollment) {
             $result = chr(65 + $carry - 1) . $result;
         }
         return $result;
+    }
+
+    protected function resolveTemplatePath(string $fileName): string
+    {
+        $candidates = [
+            storage_path('app/templates/' . $fileName),
+            public_path('templates/' . $fileName),
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        abort(500, 'Form 137 template not found. Please place it in public/templates or storage/app/templates.');
     }
 }

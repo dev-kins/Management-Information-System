@@ -97,6 +97,11 @@ public function attendances()
     return $this->hasMany(Attendance::class, 'enrollment_id');
 }
 
+public function attendance()
+{
+    return $this->attendances();
+}
+
 public function user() {
     return $this->belongsTo(User::class);
 }

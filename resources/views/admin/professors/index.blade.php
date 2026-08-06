@@ -7,15 +7,24 @@
 
     {{-- PAGE HEADER --}}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold text-success">Manage Professors</h2>
+        <div>
+            <h2 class="fw-bold text-success mb-1">Manage Professors</h2>
+            <p class="text-muted mb-0">Current school year: {{ $currentSchoolYear }}</p>
+        </div>
         <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#addProfessorModal">
             <i class="bi bi-person-plus"></i> Add New Professor
         </button>
     </div>
 
-    @error('grade_level_id')
-        <div class="text-danger small">{{ $message }}</div>
-    @enderror
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0 ps-3">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     {{-- STATS CARDS --}}
     <div class="row mb-4">
@@ -41,11 +50,8 @@
         type="search"
         name="search"
         class="form-control"
-        placeholder="Search by name"
+        placeholder="Search by name or email"
         value="{{ request('search') }}"
-        pattern="[A-Za-z\s]+"
-        title="Only letters are allowed"
-        oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')"
     >
 </div>
 
@@ -259,9 +265,10 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label>School Year</label>
-                                            <input type="text" name="school_year" class="form-control" value="{{ $professor->advisory?->school_year ?? date('Y').'-'.(date('Y')+1) }}" required>
+                                            <input type="text" name="school_year" class="form-control" value="{{ $professor->advisory?->school_year ?? $currentSchoolYear }}" pattern="\d{4}-\d{4}" inputmode="numeric" placeholder="YYYY-YYYY" required>
                                         </div>
                                     </div>
+                                    <p class="text-muted small mb-0">Each grade can only have one adviser per school year.</p>
                                     <button type="submit" class="btn btn-primary btn-sm mt-2">{{ $professor->advisory ? 'Update Adviser' : 'Assign Adviser' }}</button>
                                 </form>
                                 @if($professor->advisory)

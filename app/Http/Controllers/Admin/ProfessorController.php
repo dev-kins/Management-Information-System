@@ -14,10 +14,20 @@ use App\Mail\NewProfessorCredentialsMail;
 use App\Models\GradeLevel;
 use Illuminate\Validation\Rule;
 use App\Models\Professor;
+use Illuminate\Support\Facades\DB;
 
 
 class ProfessorController extends Controller
 {
+    protected function currentSchoolYear(): string
+    {
+        $year = now()->year;
+
+        return now()->month >= 6
+            ? $year . '-' . ($year + 1)
+            : ($year - 1) . '-' . $year;
+    }
+
     protected function professorUsersQuery()
     {
         return User::role('professor')
@@ -34,11 +44,15 @@ class ProfessorController extends Controller
     {
         $search = $request->input('search');
         $gradeLevelFilter = $request->input('grade_level_id');
-        $currentSchoolYear = now()->year . '-' . (now()->year + 1);
+        $currentSchoolYear = $this->currentSchoolYear();
         $assignedGrades = Advisory::where('school_year', $currentSchoolYear)->get();
 
 
-        $query = $this->professorUsersQuery()->with('advisory');
+        $query = $this->professorUsersQuery()->with([
+            'advisory' => fn ($advisoryQuery) => $advisoryQuery
+                ->where('school_year', $currentSchoolYear)
+                ->with('gradeLevel'),
+        ]);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -48,8 +62,9 @@ class ProfessorController extends Controller
         }
 
         if ($gradeLevelFilter) {
-            $query->whereHas('advisory', function($q) use ($gradeLevelFilter) {
-                $q->where('grade_level_id', $gradeLevelFilter);
+            $query->whereHas('advisory', function($q) use ($gradeLevelFilter, $currentSchoolYear) {
+                $q->where('grade_level_id', $gradeLevelFilter)
+                    ->where('school_year', $currentSchoolYear);
             });
         }
 
@@ -57,7 +72,10 @@ class ProfessorController extends Controller
         $gradeLevels = GradeLevel::orderBy('id')->get();
 
         // Grouped assignments for display
-        $assignments = ProfessorSubject::with('subject')->get()->groupBy('user_id');
+        $assignments = ProfessorSubject::with(['subject', 'gradeLevel'])
+            ->where('school_year', $currentSchoolYear)
+            ->get()
+            ->groupBy('user_id');
 
         // Group subjects by grade level (for assign modal)
         $subjectsGrouped = Subject::all()
@@ -67,9 +85,12 @@ class ProfessorController extends Controller
         // Stats for cards
         $stats = [
             'total' => $this->professorUsersQuery()->count(),
-            'withAdviser' => Advisory::count(),
-            'withoutAdviser' => $this->professorUsersQuery()->count() - Advisory::count(),
-            'assignments' => ProfessorSubject::count(),
+            'withAdviser' => Advisory::where('school_year', $currentSchoolYear)->distinct('user_id')->count('user_id'),
+            'withoutAdviser' => max(
+                0,
+                $this->professorUsersQuery()->count() - Advisory::where('school_year', $currentSchoolYear)->distinct('user_id')->count('user_id')
+            ),
+            'assignments' => ProfessorSubject::where('school_year', $currentSchoolYear)->count(),
         ];
 
         return view('admin.professors.index', compact(
@@ -90,22 +111,24 @@ class ProfessorController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email:rfc|unique:users,email',
         ]);
 
         $temporaryPassword = Str::random(10);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($temporaryPassword),
-            'role' => 'professor',
-        ]);
+        $user = DB::transaction(function () use ($request, $temporaryPassword) {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => strtolower($request->email),
+                'password' => bcrypt($temporaryPassword),
+                'role' => 'professor',
+            ]);
 
-        $user->assignRole('professor');
+            $user->assignRole('professor');
+            Mail::to($user->email)->send(new NewProfessorCredentialsMail($user, $temporaryPassword));
 
-        // Send credentials
-        Mail::to($user->email)->send(new NewProfessorCredentialsMail($user, $temporaryPassword));
+            return $user;
+        });
 
         return redirect()->route('admin.professors.index')
             ->with('success', 'Professor added and credentials emailed successfully.');
@@ -117,29 +140,34 @@ class ProfessorController extends Controller
     public function assignSubject(Request $request)
     {
         $request->validate([
-    'user_id' => 'required|exists:users,id',
-    'subject_id' => 'required|exists:subjects,id',
-    'grade_level_id' => 'required|exists:grade_levels,id',
-]);
+            'user_id' => 'required|exists:users,id',
+            'subject_id' => [
+                'required',
+                Rule::exists('subjects', 'id')->where(fn ($query) => $query->where('grade_level_id', $request->grade_level_id)),
+            ],
+            'grade_level_id' => 'required|exists:grade_levels,id',
+        ]);
 
+        $this->professorUsersQuery()->findOrFail($request->user_id);
+        $currentSchoolYear = $this->currentSchoolYear();
 
         $exists = ProfessorSubject::where([
             'user_id' => $request->user_id,
             'subject_id' => $request->subject_id,
+            'grade_level_id' => $request->grade_level_id,
+            'school_year' => $currentSchoolYear,
         ])->exists();
 
         if ($exists) {
             return redirect()->back()->with('error', 'This assignment already exists.');
         }
 
-        $currentSchoolYear = now()->year . '-' . (now()->year + 1);
-
         ProfessorSubject::create([
-    'user_id' => $request->user_id,
-    'subject_id' => $request->subject_id,
-    'grade_level_id' => $request->grade_level_id,
-    'school_year' => $currentSchoolYear,
-]);
+            'user_id' => $request->user_id,
+            'subject_id' => $request->subject_id,
+            'grade_level_id' => $request->grade_level_id,
+            'school_year' => $currentSchoolYear,
+        ]);
 
 
         return redirect()->back()->with('success', 'Subject assigned successfully.');
@@ -152,11 +180,14 @@ class ProfessorController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
+            'email' => 'required|email:rfc|unique:users,email,' . $id,
         ]);
 
         $professor = $this->professorUsersQuery()->findOrFail($id);
-        $professor->update($request->only('name', 'email'));
+        $professor->update([
+            'name' => $request->name,
+            'email' => strtolower($request->email),
+        ]);
 
         return redirect()->route('admin.professors.index')
             ->with('success', 'Professor updated successfully.');
@@ -186,28 +217,33 @@ class ProfessorController extends Controller
 public function assignAdviser(Request $request, $professorId)
 {
     $professor = $this->professorUsersQuery()->findOrFail($professorId); // Use User model
+    $existingAdvisoryId = Advisory::where('user_id', $professor->id)
+        ->where('school_year', $request->school_year)
+        ->value('id');
 
     // Validate input
     $request->validate([
         'grade_level_id' => [
             'required',
             'exists:grade_levels,id',
-            // Ensure grade_level_id is unique globally across advisories
-            Rule::unique('advisories')->where(function ($query) use ($professorId) {
-                return $query->where('user_id', '!=', $professorId);
-            }),
+            Rule::unique('advisories', 'grade_level_id')
+                ->where(fn ($query) => $query->where('school_year', $request->school_year))
+                ->ignore($existingAdvisoryId),
         ],
-        'school_year' => 'required|string',
+        'school_year' => ['required', 'regex:/^\d{4}-\d{4}$/'],
     ], [
-        'grade_level_id.unique' => 'Another professor is already assigned as adviser for this grade level.',
+        'grade_level_id.unique' => 'Another professor is already assigned as adviser for this grade level in the selected school year.',
+        'school_year.regex' => 'School year must use the format YYYY-YYYY.',
     ]);
 
     // Update or create advisory
     Advisory::updateOrCreate(
-        ['user_id' => $professor->id], // match by professor
+        [
+            'user_id' => $professor->id,
+            'school_year' => $request->school_year,
+        ],
         [
             'grade_level_id' => $request->grade_level_id,
-            'school_year' => $request->school_year,
         ]
     );
 
@@ -223,7 +259,9 @@ public function assignAdviser(Request $request, $professorId)
      */
     public function removeAdviser($id)
     {
-        Advisory::where('user_id', $id)->delete();
+        Advisory::where('user_id', $id)
+            ->where('school_year', $this->currentSchoolYear())
+            ->delete();
         return back()->with('success', 'Adviser removed successfully.');
     }
 
