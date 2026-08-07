@@ -1,88 +1,156 @@
-# LSHS: Online Management Information System
+# 🏫 LSHS Online Management Information System
 
-[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)](https://www.php.net/)
-[![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Status](https://img.shields.io/badge/Status-Active-success)](https://github.com/Godcalyx/Management-Information-System)
+![Laravel](https://img.shields.io/badge/Laravel-12-red?style=for-the-badge&logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=for-the-badge&logo=php)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791?style=for-the-badge&logo=postgresql)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=for-the-badge&logo=bootstrap)
+![Docker](https://img.shields.io/badge/Docker-Deployed-2496ED?style=for-the-badge&logo=docker)
+![Render](https://img.shields.io/badge/Hosted_on-Render-46E3B7?style=for-the-badge)
 
-A web-based information system for Laboratory Science High School (LSHS) focused on enrollment, grading, attendance, and academic records management.
+A comprehensive web-based **School Management Information System** developed for **Laboratory Science High School (LSHS)** to streamline academic administration through digital workflows.
 
-## About
+---
 
-The LSHS Online Management Information System (OMIS) is a capstone project built to reduce manual record handling and improve access to school data for administrators, professors, students, and superadmins.
+# 🌐 Live Demo
 
-## Features
+**Application**
 
-- Role-based access for admin, professor, student, and superadmin users
-- Student enrollment and approval workflow
-- Grade encoding, approval, and report generation
-- Attendance and announcement management
-- Form and report-card request handling
-- PDF and Excel exports for academic records
+https://management-information-system-aep1.onrender.com
 
-## Tech Stack
+---
 
-| Category | Technology |
-| --- | --- |
-| Frontend | HTML, CSS, JavaScript, Bootstrap |
-| Backend | PHP, Laravel |
-| Database | MySQL |
-| Local Server | XAMPP / Apache |
-| Version Control | Git, GitHub |
+# 📖 About
 
-## Installation
+The LSHS Online Management Information System is designed to simplify and automate school operations. The platform provides dedicated portals for administrators, professors, and students while offering efficient management of enrollment, grading, attendance, announcements, academic records, and promotion evaluation.
 
-### Prerequisites
+This project was developed as a Capstone Project for the Bachelor of Science in Information Technology program.
 
-- [XAMPP](https://www.apachefriends.org/download.html)
-- [Composer](https://getcomposer.org/)
-- [Git](https://git-scm.com/downloads)
-- A modern web browser
+---
 
-### Setup
+# ✨ Features
 
-1. Clone the repository:
+## 👨‍💼 Administrator
+
+- Dashboard Analytics
+- Student Management
+- Professor Management
+- Enrollment Management
+- Grade Level Management
+- Subject Management
+- Attendance Monitoring
+- Promotion Evaluation
+- Report Card Requests
+- Form 137 Management
+- Announcement Management
+- Audit Trail
+- Visitor Analytics
+- System Settings
+
+---
+
+## 👨‍🏫 Professor
+
+- Manage Classes
+- Record Attendance
+- Encode Grades
+- View Assigned Subjects
+- Student Records
+
+---
+
+## 👨‍🎓 Student
+
+- View Grades
+- Enrollment Status
+- Attendance Records
+- Announcements
+- Request Report Card
+- Request Form 137
+
+---
+
+# 🛠 Tech Stack
+
+| Technology | Description |
+|------------|-------------|
+| Laravel 12 | Backend Framework |
+| PHP 8.2 | Server-side Language |
+| PostgreSQL | Production Database |
+| MySQL | Local Development |
+| Bootstrap 5 | Frontend UI |
+| JavaScript | Client-side Logic |
+| Docker | Containerization |
+| Render | Cloud Deployment |
+| Git & GitHub | Version Control |
+
+---
+
+# 📷 Screenshots
+
+> Screenshots will be added soon.
+
+- Landing Page
+- Login
+- Admin Dashboard
+- Student Dashboard
+- Professor Dashboard
+- Attendance Module
+- Grade Management
+- Promotion Evaluation
+- Reports
+
+---
+
+# 🚀 Installation
 
 ```bash
-git clone https://github.com/Godcalyx/Management-Information-System.git
-cd LSHS-OMIS
-```
+git clone https://github.com/dev-kins/lshs-omis.git
 
-2. Install dependencies:
+cd lshs-omis
 
-```bash
 composer install
-```
 
-3. Create and configure the environment file:
+npm install
 
-```bash
-copy .env.example .env
+cp .env.example .env
+
 php artisan key:generate
-```
 
-4. Update `.env` with your database credentials, then run:
-
-```bash
 php artisan migrate
-```
 
-5. Start the local server:
+npm run build
 
-```bash
 php artisan serve
 ```
 
-## Screenshots
+---
 
-### Login Page
-![Login Page](screenshots/Admin_Login.png)
+# 📂 Project Structure
 
-### Admin Dashboard
-![Admin Dashboard](screenshots/Admin_Dashboard.png)
+```
+app/
+bootstrap/
+config/
+database/
+public/
+resources/
+routes/
+storage/
+```
 
-### Student Management
-![Student List](screenshots/Student_List.png)
+---
 
-### Report Card
-![Grades Report](screenshots/Report_Card.png)
+# 👨‍💻 Developer
+
+**Kenneth (dev-kins)**
+
+- 🎓 Bachelor of Science in Information Technology
+- 💼 Full-Stack Web Developer
+- 🌐 Portfolio: https://kino-portfolio-pftl.vercel.app/
+- 🐙 GitHub: https://github.com/dev-kins
+
+---
+
+# 📄 License
+
+This project was developed for educational purposes as a Capstone Project.
