@@ -36,8 +36,12 @@ class AppServiceProvider extends ServiceProvider
     {
 
         // Dynamically set session lifetime (in minutes) from settings
-    $timeout = (int) setting('security_session_timeout', 60); // default 60 minutes
+    try {
+    $timeout = (int) setting('security_session_timeout', 60);
     Config::set('session.lifetime', $timeout);
+} catch (\Throwable $e) {
+    Config::set('session.lifetime', 60);
+}
 
         // Attach Observer to multiple models
         Student::observe(AuditTrailObserver::class);
