@@ -347,7 +347,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/grade-approvals', [GradeApprovalController::class, 'index'])->name('admin.grade-approvals.index');
 
         // Promotion evaluation
-        Route::get('/promotion/evaluate/{schoolYear}', [PromotionController::class, 'viewEvaluation'])->name('admin.promotion.evaluateView');
+        Route::get('/promotion/evaluate/{schoolYear}', [PromotionController::class, 'viewEvaluation'])->name('admin.promotion.viewEvaluation');
         Route::post('/promotion/evaluate/{schoolYear}', [PromotionController::class, 'evaluate'])->name('admin.promotion.evaluate');
         Route::get('/promotion/view/{schoolYear?}', [PromotionController::class, 'viewEvaluation']);
         Route::get('/evaluate', [PromotionController::class, 'evaluateView'])->name('admin.promotion.evaluateView');

@@ -61,9 +61,6 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
 
-            'dump' => [
-    'dump_binary_path' => 'C:\\xammpp\\mysql\\bin\\',
-],
 
         ],
 
