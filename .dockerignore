@@ -1,18 +1,9 @@
-# Node modules and PHP vendor folders
+.git
+.github
 node_modules
 vendor
-
-# Logs and storage
-storage
-logs
-
-# Environment file
 .env
-
-# Git history
-.git
-.gitignore
-
-# IDE files
-*.idea
-*.vscode
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
