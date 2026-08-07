@@ -42,7 +42,6 @@ RUN mkdir -p \
     bootstrap/cache
 
 # Copy .env.example so artisan can boot during build
-RUN cp .env.example .env
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
@@ -55,9 +54,7 @@ RUN npm run build
 RUN php artisan storage:link || true
 
 # Cache Laravel configuration (ignore failures during build)
-RUN php artisan config:cache || true
-RUN php artisan route:cache || true
-RUN php artisan view:cache || true
+
 
 # Permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
