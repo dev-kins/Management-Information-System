@@ -1,9 +1,31 @@
+# Git
 .git
 .github
-node_modules
-vendor
+
+# Environment
 .env
-storage/logs
-storage/framework/cache
-storage/framework/sessions
-storage/framework/views
+.env.*
+!.env.example
+
+# Dependencies
+vendor
+node_modules
+
+# Logs
+storage/logs/*
+
+# IDE
+.vscode
+.idea
+.fleet
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Tests
+.phpunit.result.cache
+
+# Misc
+*.log
+*.zip

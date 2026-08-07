@@ -1,6 +1,6 @@
 FROM php:8.2-fpm
 
-# Install system dependencies
+# Install system packages
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -14,24 +14,55 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     nodejs \
     npm \
-    nginx \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql mbstring zip exif pcntl
+    && docker-php-ext-install \
+        gd \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        mbstring \
+        zip \
+        exif \
+        pcntl
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
+# Copy project files
 COPY . .
 
+# Create Laravel directories
+RUN mkdir -p \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache
+
+# Copy .env.example so artisan can boot during build
+RUN cp .env.example .env
+
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
+# Build frontend assets
 RUN npm install
 RUN npm run build
 
+# Generate storage symlink (ignore if already exists)
 RUN php artisan storage:link || true
 
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Cache Laravel configuration (ignore failures during build)
+RUN php artisan config:cache || true
+RUN php artisan route:cache || true
+RUN php artisan view:cache || true
 
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+# Permissions
+RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache
+
+EXPOSE 10000
+
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
