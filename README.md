@@ -43,7 +43,6 @@ This project was developed as a Capstone Project for the Bachelor of Science in 
 - Form 137 Management
 - Announcement Management
 - Audit Trail
-- Visitor Analytics
 - System Settings
 
 ---
@@ -142,11 +141,11 @@ storage/
 
 # 👨‍💻 Developer
 
-**Kenneth (dev-kins)**
+**Kian Morgan Hill (dev-kins)**
 
 - 🎓 Bachelor of Science in Information Technology
 - 💼 Full-Stack Web Developer
-- 🌐 Portfolio: https://kino-portfolio-pftl.vercel.app/
+- 🌐 Portfolio: https://dev-kins.vercel.app/
 - 🐙 GitHub: https://github.com/dev-kins
 
 ---
